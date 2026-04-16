@@ -6,8 +6,12 @@ Main application entry point.
 
 from contextlib import asynccontextmanager
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import api_router
 from app.db.session import init_db
@@ -57,6 +61,9 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
     
+    static_dir = Path(__file__).resolve().parent / "app" / "static"
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    
     # CORS middleware
     app.add_middleware(
         CORSMiddleware,
@@ -76,9 +83,17 @@ def create_application() -> FastAPI:
             "name": settings.APP_NAME,
             "version": settings.APP_VERSION,
             "docs": "/docs",
+            "ui": "/ui",
         }
+
+    @app.get("/ui", response_class=HTMLResponse)
+    def ui():
+        """Serve the web frontend."""
+        index_path = static_dir / "index.html"
+        return HTMLResponse(index_path.read_text(encoding="utf-8"))
     
     @app.get("/health")
+    @app.get("/v1/health")
     def health_check():
         """Health check endpoint."""
         return {

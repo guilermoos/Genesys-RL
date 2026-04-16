@@ -53,11 +53,12 @@ def run_training_job(self, job_id: str) -> Dict[str, Any]:
         
         # Create environment from template
         template_class = TemplateRegistry.get(job.template)
-        env_config = job.config.get("env_config", {})
+        env_config = job.config.get("env_config") or {}
         
         # Merge with default config
         default_config = template_class({}).get_default_config()
-        default_config.update(env_config)
+        if default_config and env_config:
+            default_config.update(env_config)
         
         environment = template_class(default_config)
         

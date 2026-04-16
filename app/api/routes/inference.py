@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_current_user
-from app.schemas.inference import InferenceRequest, InferenceResponse
+from app.schemas.inference import InferenceRequest, InferenceResponse, InferenceBatchRequest, InferenceBatchResponse
 from app.services.inference_service import InferenceService
 from app.models.user import User
 
@@ -65,11 +65,10 @@ def predict(
         )
 
 
-@router.post("/projects/{project_id}/predict/batch")
+@router.post("/projects/{project_id}/predict/batch", response_model=InferenceBatchResponse)
 def predict_batch(
     project_id: str,
-    states: List[List[float]],
-    model_version_id: str = None,
+    request: InferenceBatchRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -78,8 +77,7 @@ def predict_batch(
     
     Args:
         project_id: Project ID
-        states: List of state vectors
-        model_version_id: Optional specific model version
+        request: Batch inference request with states
         current_user: Current authenticated user
         db: Database session
         
@@ -91,8 +89,8 @@ def predict_batch(
             db,
             project_id,
             current_user.id,
-            states=states,
-            model_version_id=model_version_id,
+            states=request.states,
+            model_version_id=request.model_version_id,
         )
         
         return result

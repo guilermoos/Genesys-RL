@@ -129,7 +129,15 @@ celery -A app.workers.celery_app worker --loglevel=info
 | GET | `/v1/templates` | Listar templates |
 | GET | `/v1/templates/{name}` | Detalhes do template |
 
-## 💡 Exemplos de Uso
+## � Web Frontend
+
+A aplicação agora inclui uma interface web para usar a API diretamente no navegador.
+
+- Acesse: `http://localhost:8000/ui`
+- O frontend consome os endpoints existentes em `/v1`
+- Não altera a versão da API ou os endpoints atuais
+
+## �💡 Exemplos de Uso
 
 ### 1. Registrar Usuário
 

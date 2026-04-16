@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genesys UI</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Genesys Dashboard</h1>
+      <p>Interface web para gerenciar projetos, treinos e inferência.</p>
+    </div>
+    <div id="user-status" class="user-status"></div>
+  </header>
+
+  <main class="app-main">
+    <section id="notification" class="notification hidden"></section>
+
+    <section id="auth-section" class="card">
+      <h2>Autenticação</h2>
+      <div class="auth-block">
+        <div class="auth-form">
+          <h3>Login</h3>
+          <label>Email</label>
+          <input id="login-email" type="email" />
+          <label>Senha</label>
+          <input id="login-password" type="password" />
+          <button id="login-button">Entrar</button>
+        </div>
+        <div class="auth-form">
+          <h3>Registrar</h3>
+          <label>Nome</label>
+          <input id="register-name" type="text" />
+          <label>Email</label>
+          <input id="register-email" type="email" />
+          <label>Senha</label>
+          <input id="register-password" type="password" />
+          <button id="register-button">Criar conta</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="main-section" class="hidden">
+      <div class="toolbar">
+        <button data-view="projects">Projetos</button>
+        <button data-view="templates">Templates</button>
+        <button data-view="training">Treinamento</button>
+        <button data-view="inference">Inferência</button>
+        <button id="logout-button" class="danger">Sair</button>
+      </div>
+      <div id="view-container"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <small>API versionada em <code>/v1</code> — frontend estático integrado.</small>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
