@@ -1,11 +1,114 @@
 # GPU & Testing Suite
 
-Esta pasta contém testes completos para verificar funcionalidade de GPU e performance do sistema.
+Esta pasta contém testes completos para verificar funcionalidade de GPU e performance do sistema Genesys.
+
+**Nota:** Todos os benchmarks são testes INTEGRADOS do sistema SaaS. Não usam ferramentas externas - testam os modelos DQN reais com configurações realistas.
 
 ## 📋 Arquivos de Teste
 
-### 1. `test_gpu_cpu_benchmark.py`
-Benchmark comparativo entre CPU e GPU para inferência.
+### 🎯 **benchmark_all.py** (NOVO - RECOMENDADO!)
+Arquivo consolidado com todos os benchmarks em uma única execução.
+
+**Características:**
+- ✅ Testes pequeno, médio e grande em CPU e GPU
+- ✅ Output limpo e organizado (sem poluição)
+- ✅ Sistema de scoring (🟢 Verde/🟡 Amarelo/🔴 Vermelho)
+- ✅ Análise de utilização de GPU (por que está em 10-15%?)
+- ✅ Recomendações automáticas
+- ✅ Testa INFERENCE + TRAINING em uma única rodada
+
+**Como usar:**
+```bash
+# Executar todos os benchmarks de uma vez
+python tests/benchmark_all.py
+
+# Ou com pytest
+pytest tests/benchmark_all.py -v -s
+```
+
+**Output esperado:**
+```
+╔════════════════════════════════════════════════════════════════╗
+║       GENESYS GPU vs CPU BENCHMARK SUITE                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+🖥️  GPU INFORMATION & UTILIZATION ANALYSIS
+═══════════════════════════════════════════════════════════════
+Device: NVIDIA GeForce RTX 4060
+❓ Why GPU Usage is 10-15% instead of 100%:
+  1. 📦 Small Model Size - Modelos atuais são pequenos para GPU
+  2. 🔄 Memory Bandwidth Overhead - CPU→GPU transfer é overhead
+  3. ⚙️  Batch Size Not Optimized - Batch pequeno para RTX 4060
+  ...
+
+🔍 INFERENCE BENCHMARK (100 batches)
+═══════════════════════════════════════════════════════════════
+Small Model (state_size=32):
+  CPU: 0.008s (400,000 pred/s)
+  GPU: 0.095s (33,684 pred/s)
+
+📊 BENCHMARK SUMMARY
+─────────────────────────────────────────────────────────────
+Inference Small         0.008s     0.095s    🔴 CPU 11.9x faster
+```
+
+---
+
+## 🖥️ GPU Utilization Analysis
+
+### Por que a GPU usa apenas 10-15% de capacidade?
+
+A GPU está subutilizada porque:
+
+| Fator | Problema | Impacto |
+|-------|----------|--------|
+| **Modelos pequenos** | State size 32-128, hidden [64-512] | Não paralela suficiente |
+| **Batch size pequeno** | 32-256 é pouco para RTX 4060 | 3,060 CUDA cores não saturados |
+| **Overhead de transfer** | CPU→GPU ~50-100 GB/s, but calc > transfer | Para pequenos tensores é lento |
+| **Memória subutilizada** | ~0.5GB de 8GB (6.25%) | GPU idle waiting for data |
+| **Arquitetura simples** | DQN é rede simples 2-3 layers | Pouco paralelismo possível |
+
+### Como alcançar 50%+ GPU utilization:
+
+```python
+# ❌ ATUAL (10-15% utilization)
+config = {
+    "state_size": 50,
+    "hidden_layers": [128, 128],
+    "batch_size": 128,
+    "episodes": 50
+}
+
+# ✅ OTIMIZADO (50%+ utilization)
+config = {
+    "state_size": 512,           # 10x maior
+    "hidden_layers": [1024, 1024, 512],  # Muito maior
+    "batch_size": 512,           # 4x maior
+    "episodes": 500,             # 10x maior
+    "memory_size": 100000        # Replay buffer maior
+}
+```
+
+### Scaling Guide:
+
+| Model Size | Batch Size | GPU Usage | Recomendação |
+|------------|-----------|-----------|--------------|
+| Small (32) | 32 | 5-10% | Use CPU |
+| Small (32) | 256 | 10-15% | Use CPU |
+| Medium (128) | 128 | 10-20% | Use CPU |
+| Medium (128) | 512 | 20-30% | Borderline |
+| Large (256) | 256 | 30-40% | Use GPU |
+| Large (256) | 512 | 40-50% | ✅ Use GPU |
+| XLarge (512) | 512 | 50-70% | ✅ Optimal |
+| XLarge (512) | 1024 | 70-90% | ✅ Saturated |
+
+---
+
+### 1️⃣ Testes Individuais (Mantidos para referência)
+
+**Nota:** Use `benchmark_all.py` para execução consolidada. Os testes abaixo podem ser usados individualmente se necessário.
+
+#### `test_gpu_cpu_benchmark.py`
 
 **Classes:**
 - `TestGPUCPUBenchmark`: Testes de performance CPU vs GPU (modelos pequenos)
@@ -26,7 +129,7 @@ pytest tests/test_gpu_cpu_benchmark.py::TestGPUCPUBenchmark::test_gpu_vs_cpu_com
 pytest tests/test_gpu_cpu_benchmark.py::TestLargeModelGPUBenchmark::test_large_model_gpu_speedup -v -s
 ```
 
-### 2. `test_gpu_training.py`
+#### `test_gpu_training.py`
 Testes de treinamento otimizado para GPU.
 
 **Classes:**
@@ -47,7 +150,7 @@ pytest tests/test_gpu_training.py::TestGPUOptimizedTraining::test_batch_size_imp
 pytest tests/test_gpu_training.py::TestGPUOptimizedTraining::test_gpu_memory_cleanup -v -s
 ```
 
-### 3. `test_api_gpu_integration.py`
+#### `test_api_gpu_integration.py`
 Testes de integração da API com treinamento GPU.
 
 **Classes:**
@@ -69,7 +172,7 @@ pytest tests/test_api_gpu_integration.py::TestGPUTrainingWorkflow::test_training
 pytest tests/test_api_gpu_integration.py::TestGPUTrainingWorkflow::test_multiple_concurrent_projects -v -s
 ```
 
-### 4. `test_rl.py` (Existente)
+#### `test_rl.py` (Existente)
 Testes dos componentes RL (Network, ReplayBuffer, Agent).
 
 ### 5. `test_templates.py` (Existente)
