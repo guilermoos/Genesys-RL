@@ -1,0 +1,44 @@
+genesys/
+├── app/
+│   ├── api/                    # FastAPI routes
+│   │   ├── deps.py            # Dependências (auth, db)
+│   │   └── routes/
+│   │       ├── auth.py        # Autenticação
+│   │       ├── inference.py   # Inferência
+│   │       ├── models.py      # Modelos
+│   │       ├── projects.py    # Projetos
+│   │       ├── templates.py   # Templates
+│   │       └── training.py    # Treinamento
+│   ├── db/
+│   │   └── session.py         # Sessão SQLAlchemy
+│   ├── models/                # Modelos SQLAlchemy
+│   │   ├── base.py
+│   │   ├── user.py
+│   │   ├── project.py
+│   │   ├── training_job.py
+│   │   ├── model_version.py
+│   │   └── inference_log.py
+│   ├── rl/                    # Core DQN
+│   │   ├── network.py         # Redes neurais
+│   │   ├── replay_buffer.py   # Experience replay
+│   │   ├── agent.py           # Agente DQN
+│   │   └── trainer.py         # Treinador
+│   ├── schemas/               # Pydantic schemas
+│   ├── services/              # Lógica de negócio
+│   ├── templates/             # Templates de ambiente
+│   │   ├── base.py           # Base + Registry
+│   │   ├── grid_world.py     # GridWorld
+│   │   └── decision_optimization.py
+│   ├── utils/                 # Utilitários
+│   └── workers/               # Celery tasks
+│       ├── celery_app.py
+│       └── training_tasks.py
+├── examples/                  # Exemplos de uso
+│   ├── quickstart.py
+│   └── curl_examples.sh
+├── tests/                     # Testes
+├── storage/                   # Persistência
+├── main.py                    # Entry point
+├── requirements.txt
+├── README.md
+└── .env.example
